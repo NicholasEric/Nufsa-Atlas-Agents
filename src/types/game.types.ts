@@ -135,24 +135,6 @@ export interface DetectionConfig {
 }
 
 // ============================================================================
-// UI System Types
-// ============================================================================
-
-/**
- * State of the item list UI entry.
- */
-export interface ItemListEntry {
-  /** Reference to the item data */
-  item: ItemData;
-  /** Container for this entry */
-  container: Phaser.GameObjects.Container;
-  /** Text label showing item name */
-  text: Phaser.GameObjects.Text;
-  /** Checkmark icon (visible when collected) */
-  checkmark: Phaser.GameObjects.Text;
-}
-
-// ============================================================================
 // Game Flow Types
 // ============================================================================
 

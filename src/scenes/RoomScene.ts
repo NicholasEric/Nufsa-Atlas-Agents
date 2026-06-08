@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { SceneKeys, ItemData, GameConfig } from '../types/game.types';
 import { UIManager } from '../system/UIManager';
+import { EvidenceBar } from '../system/EvidenceBar';
 
 /**
  * RoomScene displays a single large room photo as a drag-to-pan view,
@@ -15,8 +16,8 @@ export class RoomScene extends Scene {
   private roomItems: ItemData[] = []; // items located in THIS room
   private collectedIds: Set<string> = new Set();
 
-  /** Item entries on the bottom bar, keyed by item id, so we can tick them */
-  private barEntries: Map<string, { bg: Phaser.GameObjects.Rectangle; text: Phaser.GameObjects.Text; check: Phaser.GameObjects.Text }> = new Map();
+  /** Shared bottom evidence bar (same component GameScene uses). */
+  private evidenceBar: EvidenceBar | null = null;
 
   /** Item sprites placed on the room image, keyed by item id */
   private roomItemSprites: Map<string, Phaser.GameObjects.Sprite> = new Map();
@@ -58,7 +59,7 @@ export class RoomScene extends Scene {
     this.createRoomImage(w, h);
     this.createRoomItemSprites();
     this.createExitButton(w);
-    this.createEvidenceBar(w, h);
+    this.evidenceBar = new EvidenceBar(this, this.items, this.collectedIds);
   }
 
   /**
@@ -179,7 +180,7 @@ export class RoomScene extends Scene {
     this.persistCollected();
 
     UIManager.createItemPopup(this, item, () => {
-      this.markBarEntry(item.id);
+      this.evidenceBar?.setCollected(item.id);
       // Win check — if all 10 globally collected, end the game directly
       // from here. Otherwise just leave the player in the room.
       if (this.collectedIds.size >= this.items.length) {
@@ -200,19 +201,6 @@ export class RoomScene extends Scene {
       ...prev,
       collectedIds: [...this.collectedIds],
     });
-  }
-
-  /**
-   * Updates the local bottom-bar entry for an item to its collected
-   * (green + check) appearance.
-   */
-  private markBarEntry(itemId: string): void {
-    const entry = this.barEntries.get(itemId);
-    if (!entry) return;
-    entry.bg.setStrokeStyle(2, 0x00ff00);
-    entry.text.setColor('#00ff00');
-    entry.text.setStyle({ fontStyle: 'bold' });
-    entry.check.setText('✓');
   }
 
   /**
@@ -272,70 +260,9 @@ export class RoomScene extends Scene {
     bg.on('pointerover', () => bg.setFillStyle(0xff4444, 0.95));
     bg.on('pointerout', () => bg.setFillStyle(0xaa2a2a, 0.95));
     bg.on('pointerdown', () => {
+      this.evidenceBar?.destroy();
       this.scene.stop();
       this.scene.resume(SceneKeys.Game);
-    });
-  }
-
-  /**
-   * Bottom evidence bar — same look as GameScene's bar, showing all
-   * global items with checkmark state. Read-only (no click → modal).
-   */
-  private createEvidenceBar(viewW: number, viewH: number): void {
-    const panelHeight = 100;
-    const panelY = viewH - panelHeight - 10;
-
-    const panelBg = this.add.rectangle(
-      viewW / 2,
-      panelY + panelHeight / 2,
-      viewW - 20,
-      panelHeight,
-      0x1a1a2e,
-      0.95
-    );
-    panelBg.setStrokeStyle(2, 0x4a4a6a);
-    panelBg.setDepth(50);
-
-    const title = this.add.text(20, panelY + 10, 'EVIDENCE', {
-      fontFamily: 'GameFont, Arial',
-      fontSize: '14px',
-      color: '#8888aa',
-      fontStyle: 'bold',
-    });
-    title.setDepth(51);
-
-    const startX = 20;
-    const spacing = 95;
-    const entriesY = panelY + 40;
-
-    this.items.forEach((item, index) => {
-      const x = startX + (index % 10) * spacing;
-      const y = entriesY + Math.floor(index / 10) * 35;
-      const collected = this.collectedIds.has(item.id);
-
-      const bg = this.add.rectangle(x, y, 85, 28, 0x2a2a3e, 1);
-      bg.setStrokeStyle(2, collected ? 0x00ff00 : 0x555555);
-      bg.setOrigin(0, 0);
-      bg.setDepth(51);
-
-      const shortName = item.name.length > 10 ? item.name.substring(0, 9) + '…' : item.name;
-      const nameText = this.add.text(x + 4, y + 4, shortName, {
-        fontFamily: 'GameFont, Arial',
-        fontSize: '11px',
-        color: collected ? '#00ff00' : '#888888',
-        fontStyle: collected ? 'bold' : 'normal',
-      });
-      nameText.setDepth(52);
-
-      const check = this.add.text(x + 75, y + 2, collected ? '✓' : '', {
-        fontFamily: 'GameFont, Arial',
-        fontSize: '16px',
-        color: '#00ff00',
-        fontStyle: 'bold',
-      });
-      check.setDepth(52);
-
-      this.barEntries.set(item.id, { bg, text: nameText, check });
     });
   }
 }

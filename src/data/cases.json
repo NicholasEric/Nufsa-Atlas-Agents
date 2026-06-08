@@ -14,7 +14,7 @@
       "description": "An old samurai sword covered in rust. The handle wrapping has come loose.",
       "spriteKey": "item_katana",
       "assetPath": "items/japanese-katana.png",
-      "location": { "type": "room", "area": "room-japan-1", "x": 1200, "y": 800 }
+      "location": { "type": "room", "area": "room-japan-living-room", "x": 1200, "y": 900 }
     },
     {
       "id": "fan",
@@ -22,7 +22,7 @@
       "description": "A decorative fan with cherry blossom patterns. Several ribs are broken.",
       "spriteKey": "item_fan",
       "assetPath": "items/japanese-fan.png",
-      "location": { "type": "room", "area": "room-japan-2", "x": 1500, "y": 800 }
+      "location": { "type": "room", "area": "room-japan-shop", "x": 400, "y": 400 }
     },
     {
       "id": "hat",
@@ -30,7 +30,7 @@
       "description": "A traveler's woven straw hat. The brim is frayed and stained with rain.",
       "spriteKey": "item_hat",
       "assetPath": "items/japanese-hat.png",
-      "location": { "type": "room", "area": "room-japan-3", "x": 1700, "y": 1000 }
+      "location": { "type": "room", "area": "room-japan-balcony", "x": 1000, "y": 1200 }
     },
     {
       "id": "origami",
@@ -54,7 +54,7 @@
       "description": "A ceramic tokkuri half-full of cold sake. A faint lipstick mark stains the rim.",
       "spriteKey": "item_sake",
       "assetPath": "items/japanese-sake.png",
-      "location": { "type": "room", "area": "room-japan-1", "x": 2400, "y": 1500 }
+      "location": { "type": "room", "area": "room-japan-shop", "x": 950, "y": 450 }
     },
     {
       "id": "daruma",
@@ -62,7 +62,7 @@
       "description": "A round red daruma with only one eye painted in. A wish left unfulfilled.",
       "spriteKey": "item_daruma",
       "assetPath": "items/japanese-daruma.png",
-      "location": { "type": "room", "area": "room-japan-2", "x": 2200, "y": 1300 }
+      "location": { "type": "room", "area": "room-japan-living-room", "x": 2400, "y": 1300 }
     },
     {
       "id": "bonsai",
@@ -70,7 +70,7 @@
       "description": "A miniature pine in a cracked ceramic pot. Soil is spilled across the floor.",
       "spriteKey": "item_bonsai",
       "assetPath": "items/japanese-bonsai.png",
-      "location": { "type": "room", "area": "room-japan-4", "x": 1200, "y": 1500 }
+      "location": { "type": "room", "area": "room-japan-balcony", "x": 2600, "y": 1500 }
     },
     {
       "id": "kitsune-mask",

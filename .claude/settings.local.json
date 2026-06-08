@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(ls public/assets/items/)",
-      "Bash(ls public/assets/)"
+      "Bash(ls public/assets/)",
+      "Bash(git add *)"
     ]
   }
 }

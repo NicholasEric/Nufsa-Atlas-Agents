@@ -174,10 +174,12 @@ export class GameScene extends Scene {
         { name: 'Behind', depth: 10 },
       ],
       doors: [
-        { layerName: 'Door1', imageKey: 'room-japan-1', label: 'Enter Room 1' },
-        { layerName: 'Door2', imageKey: 'room-japan-2', label: 'Enter Room 2' },
-        { layerName: 'Door3', imageKey: 'room-japan-3', label: 'Enter Room 3' },
-        { layerName: 'Door4', imageKey: 'room-japan-4', label: 'Enter Room 4' },
+        { layerName: 'Door1', imageKey: 'room-japan-balcony', label: 'Enter Balcony' },
+        { layerName: 'Door2', imageKey: 'room-japan-living-room', label: 'Enter Living Room' },
+        { layerName: 'Door3', imageKey: 'room-japan-shop', label: 'Enter Shop' },
+        // Door4's real photo isn't ready yet → opens the generated
+        // 'room-japan-placeholder' texture (no items live here yet).
+        { layerName: 'Door4', imageKey: 'room-japan-placeholder', label: 'Locked Room' },
       ],
     },
     autumn: {

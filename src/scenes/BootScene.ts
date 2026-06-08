@@ -77,11 +77,12 @@ export class BootScene extends Scene {
     this.load.image('autumn-objects', 'assets/tiles/Autumn_Forest_Objects.png');
 
     // Room photos shown when the player enters a Door / Water interaction
-    // zone. Native sizes are large (3000-4000 px wide); RoomScene scrolls.
-    this.load.image('room-japan-1', 'assets/maps/japan/room-1.jpg');
-    this.load.image('room-japan-2', 'assets/maps/japan/room-2.jpg');
-    this.load.image('room-japan-3', 'assets/maps/japan/room-3.jpg');
-    this.load.image('room-japan-4', 'assets/maps/japan/room-4.jpg');
+    // zone. Native sizes are large (1300-3800 px wide); RoomScene scrolls.
+    // Door4's room image hasn't been created yet → it opens a generated
+    // "coming soon" placeholder (see createRoomPlaceholderTexture).
+    this.load.image('room-japan-balcony', 'assets/maps/japan/balcony.jpg');
+    this.load.image('room-japan-living-room', 'assets/maps/japan/living-room.jpg');
+    this.load.image('room-japan-shop', 'assets/maps/japan/shop.jpg');
     this.load.image('room-autumn-1', 'assets/maps/autumn/room-1.png');
 
     // Load player animation frames (separate PNGs, side-view only).
@@ -119,6 +120,10 @@ export class BootScene extends Scene {
   create(): void {
     // Generate all placeholder textures
     this.createPlaceholderTextures();
+
+    // Generate the "coming soon" room texture used by Door4 until its real
+    // photo is added.
+    this.createRoomPlaceholderTexture();
 
     // Register player animations from the loaded PNG frames.
     this.createPlayerAnimations();
@@ -163,6 +168,44 @@ export class BootScene extends Scene {
         repeat: -1,
       });
     }
+  }
+
+  /**
+   * Bakes a "Room coming soon" placeholder into the texture key
+   * 'room-japan-placeholder'. RoomScene renders this like any other room
+   * photo (drag-to-pan, edge-clamped) so Door4 still opens cleanly until
+   * its real image is added.
+   */
+  private createRoomPlaceholderTexture(): void {
+    const w = 1280;
+    const h = 720;
+    const key = 'room-japan-placeholder';
+    if (this.textures.exists(key)) return;
+
+    const rt = this.make.renderTexture({ width: w, height: h }, false);
+    rt.fill(0x14141f, 1);
+
+    const border = this.make.graphics({});
+    border.lineStyle(6, 0x3a3a5a, 1);
+    border.strokeRect(20, 20, w - 40, h - 40);
+    rt.draw(border);
+    border.destroy();
+
+    const title = this.make.text(
+      {
+        x: w / 2,
+        y: h / 2 - 24,
+        text: 'Room coming soon',
+        style: { fontFamily: 'GameFont, Arial', fontSize: '48px', color: '#8888aa' },
+      },
+      false
+    );
+    title.setOrigin(0.5);
+    rt.draw(title, w / 2, h / 2 - 24);
+    title.destroy();
+
+    rt.saveTexture(key);
+    rt.destroy();
   }
 
   /**

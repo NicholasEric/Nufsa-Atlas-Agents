@@ -1,8 +1,11 @@
-import { ItemData, ItemListEntry } from '../types/game.types';
+import { ItemData } from '../types/game.types';
+import { EvidenceBar } from './EvidenceBar';
 
 /**
  * UIManager handles all UI components.
- * Timer, item list, magnifier button, and description modal.
+ * Timer, magnifier button, travel/room buttons, and the FOUND popup.
+ * The bottom evidence bar (+ its description modal) is delegated to the
+ * shared EvidenceBar component so it matches RoomScene exactly.
  */
 export class UIManager {
   /** Container for all UI elements */
@@ -11,18 +14,12 @@ export class UIManager {
   /** Timer display */
   private timerText: Phaser.GameObjects.Text | null = null;
 
-  /** Item list panel and entries */
-  private itemListPanel: Phaser.GameObjects.Container | null = null;
-  private itemEntries: Map<string, ItemListEntry> = new Map();
+  /** Shared bottom evidence bar (built in populateItemList). */
+  private evidenceBar: EvidenceBar | null = null;
 
   /** Magnifier button */
   private magnifierBtn: Phaser.GameObjects.Container | null = null;
   private magnifierGlow: Phaser.GameObjects.Graphics | null = null;
-
-  /** Description modal */
-  private modalContainer: Phaser.GameObjects.Container | null = null;
-  private modalName: Phaser.GameObjects.Text | null = null;
-  private modalDescription: Phaser.GameObjects.Text | null = null;
 
   /** Callback when magnifier is pressed */
   public onMagnifierPressed?: () => void;
@@ -51,9 +48,7 @@ export class UIManager {
     this.uiContainer.setScrollFactor(0);
 
     this.createTimer(scene);
-    this.createItemList(scene);
     this.createMagnifierButton(scene);
-    this.createModal(scene);
   }
 
   /**
@@ -77,110 +72,16 @@ export class UIManager {
   }
 
   /**
-   * Creates the item list panel at the bottom.
-   * Shows all items with gray (uncollected) or green + checkmark (collected).
-   */
-  private createItemList(scene: Phaser.Scene): void {
-    const screenWidth = scene.scale.width;
-    const screenHeight = scene.scale.height;
-    const panelHeight = 100;
-    const panelY = screenHeight - panelHeight - 10;
-
-    // Background panel
-    const panelBg = scene.add.rectangle(screenWidth / 2, panelY + panelHeight / 2, screenWidth - 20, panelHeight, 0x1a1a2e, 0.85);
-    panelBg.setStrokeStyle(2, 0x4a4a6a);
-    panelBg.setScrollFactor(0);
-    panelBg.setDepth(999);
-
-    // Title
-    const title = scene.add.text(20, panelY + 10, 'EVIDENCE', {
-      fontFamily: 'GameFont, Arial',
-      fontSize: '14px',
-      color: '#8888aa',
-      fontStyle: 'bold',
-    });
-    title.setScrollFactor(0);
-    title.setDepth(1000);
-
-    // Container for item entries
-    this.itemListPanel = scene.add.container(0, panelY + 40);
-    this.itemListPanel.setScrollFactor(0);
-    this.itemListPanel.setDepth(1000);
-
-    this.uiContainer.add([panelBg, title, this.itemListPanel]);
-  }
-
-  /**
-   * Populates the item list with entries.
-   * Call after creating the panel.
+   * Builds the shared bottom evidence bar. Call once after construction.
+   * Items already flagged `collected` start ticked. Tapping a slot opens
+   * the description modal, which pauses the game via onModalStateChanged
+   * (read lazily so it works even if the callback is wired up later).
    */
   public populateItemList(scene: Phaser.Scene, items: ItemData[]): void {
-    if (!this.itemListPanel) return;
-
-    // Clear existing entries
-    this.itemListPanel.removeAll(true);
-    this.itemEntries.clear();
-
-    const startX = 20;
-    const spacing = 95;
-
-    items.forEach((item, index) => {
-      const x = startX + (index % 10) * spacing;
-      const y = Math.floor(index / 10) * 35;
-
-      // Create entry container
-      const entryContainer = scene.add.container(x, y);
-
-      // Background for item name
-      const bg = scene.add.rectangle(0, 0, 85, 28, 0x2a2a3e, 1);
-      bg.setStrokeStyle(2, item.collected ? 0x00ff00 : 0x555555);
-      bg.setOrigin(0, 0);
-
-      // Item name text
-      const shortName = item.name.length > 10 ? item.name.substring(0, 9) + '…' : item.name;
-      const nameText = scene.add.text(4, 4, shortName, {
-        fontFamily: 'GameFont, Arial',
-        fontSize: '11px',
-        color: item.collected ? '#00ff00' : '#888888',
-        fontStyle: item.collected ? 'bold' : 'normal',
-      });
-
-      // Checkmark (visible when collected)
-      const checkmark = scene.add.text(75, 2, item.collected ? '✓' : '', {
-        fontFamily: 'GameFont, Arial',
-        fontSize: '16px',
-        color: '#00ff00',
-        fontStyle: 'bold',
-      });
-
-      entryContainer.add([bg, nameText, checkmark]);
-
-      // Make the bg rectangle interactive directly (reliable hit area)
-      bg.setInteractive({ useHandCursor: true });
-
-      // Store entry reference
-      const entry: ItemListEntry = {
-        item,
-        container: entryContainer,
-        text: nameText,
-        checkmark,
-      };
-      this.itemEntries.set(item.id, entry);
-
-      // Click handler - show description modal
-      bg.on('pointerdown', () => {
-        this.showModal(scene, item);
-      });
-
-      // Hover effect
-      bg.on('pointerover', () => {
-        bg.setFillStyle(0x3a3a4e);
-      });
-      bg.on('pointerout', () => {
-        bg.setFillStyle(0x2a2a3e);
-      });
-
-      this.itemListPanel!.add(entryContainer);
+    this.evidenceBar?.destroy();
+    const collectedIds = items.filter(it => it.collected).map(it => it.id);
+    this.evidenceBar = new EvidenceBar(scene, items, collectedIds, {
+      onModalStateChanged: open => this.onModalStateChanged?.(open),
     });
   }
 
@@ -278,24 +179,10 @@ export class UIManager {
   }
 
   /**
-   * Updates an item entry's visual state.
+   * Updates an item slot's collected state on the evidence bar.
    */
   public updateItemEntry(itemId: string, collected: boolean): void {
-    const entry = this.itemEntries.get(itemId);
-    if (!entry) return;
-
-    if (collected) {
-      entry.text.setColor('#00ff00');
-      entry.text.setStyle({ fontStyle: 'bold' });
-      entry.checkmark.setText('✓');
-      entry.checkmark.setColor('#00ff00');
-      (entry.container.first as Phaser.GameObjects.Rectangle)?.setStrokeStyle(2, 0x00ff00);
-    } else {
-      entry.text.setColor('#888888');
-      entry.text.setStyle({ fontStyle: 'normal' });
-      entry.checkmark.setText('');
-      (entry.container.first as Phaser.GameObjects.Rectangle)?.setStrokeStyle(1, 0x555555);
-    }
+    this.evidenceBar?.setCollected(itemId, collected);
   }
 
   /**
@@ -318,125 +205,6 @@ export class UIManager {
     } else {
       this.timerText.setColor('#ffffff');
     }
-  }
-
-  /**
-   * Creates the description modal overlay.
-   */
-  private createModal(scene: Phaser.Scene): void {
-    const screenWidth = scene.scale.width;
-    const screenHeight = scene.scale.height;
-
-    // Modal container (hidden by default)
-    this.modalContainer = scene.add.container(0, 0);
-    this.modalContainer.setSize(screenWidth, screenHeight);
-    this.modalContainer.setDepth(2000);
-    this.modalContainer.setScrollFactor(0);
-    this.modalContainer.setVisible(false);
-
-    // Semi-transparent background
-    const bg = scene.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000, 0.7);
-    bg.setOrigin(0);
-
-    // Center panel
-    const panelWidth = Math.min(screenWidth - 40, 500);
-    const panelHeight = 250;
-    const panelX = screenWidth / 2 - panelWidth / 2;
-    const panelY = screenHeight / 2 - panelHeight / 2;
-
-    const panel = scene.add.rectangle(panelX, panelY, panelWidth, panelHeight, 0x2a2a3e);
-    panel.setStrokeStyle(2, 0x6666aa);
-    panel.setOrigin(0);
-
-    // Item name
-    this.modalName = scene.add.text(panelX + 20, panelY + 20, '', {
-      fontFamily: 'GameFont, Arial',
-      fontSize: '24px',
-      color: '#ffffff',
-      fontStyle: 'bold',
-    });
-
-    // Description
-    this.modalDescription = scene.add.text(panelX + 20, panelY + 60, '', {
-      fontFamily: 'GameFont, Arial',
-      fontSize: '16px',
-      color: '#cccccc',
-      wordWrap: { width: panelWidth - 40 },
-      lineSpacing: 8,
-    });
-
-    // Close button
-    const closeBtn = scene.add.text(panelX + panelWidth - 40, panelY + 10, '✕', {
-      fontFamily: 'GameFont, Arial',
-      fontSize: '24px',
-      color: '#888888',
-    });
-    closeBtn.setInteractive({ useHandCursor: true });
-    closeBtn.on('pointerdown', () => {
-      this.hideModal(scene);
-    });
-    closeBtn.on('pointerover', () => {
-      closeBtn.setColor('#ffffff');
-    });
-    closeBtn.on('pointerout', () => {
-      closeBtn.setColor('#888888');
-    });
-
-    // Close on background click
-    bg.setInteractive(new Phaser.Geom.Rectangle(0, 0, screenWidth, screenHeight), Phaser.Geom.Rectangle.Contains);
-    bg.on('pointerdown', (event: Phaser.Input.Pointer) => {
-      // Only close if clicking outside panel
-      if (event.x < panelX || event.x > panelX + panelWidth ||
-          event.y < panelY || event.y > panelY + panelHeight) {
-        this.hideModal(scene);
-      }
-    });
-
-    this.modalContainer.add([bg, panel, this.modalName, this.modalDescription, closeBtn]);
-    this.uiContainer.add(this.modalContainer);
-  }
-
-  /**
-   * Shows the description modal with item info.
-   */
-  public showModal(scene: Phaser.Scene, item: ItemData): void {
-    if (!this.modalContainer || !this.modalName || !this.modalDescription) return;
-
-    this.modalName.setText(item.name);
-    this.modalDescription.setText(item.description);
-    this.modalContainer.setVisible(true);
-
-    // Notify that modal is open (pause game)
-    this.onModalStateChanged?.(true);
-
-    // Fade in animation
-    this.modalContainer.setAlpha(0);
-    scene.tweens.add({
-      targets: this.modalContainer,
-      alpha: 1,
-      duration: 200,
-      ease: 'Power2',
-    });
-  }
-
-  /**
-   * Hides the description modal.
-   */
-  public hideModal(scene: Phaser.Scene): void {
-    if (!this.modalContainer) return;
-
-    // Notify that modal is closed (resume game)
-    this.onModalStateChanged?.(false);
-
-    scene.tweens.add({
-      targets: this.modalContainer,
-      alpha: 0,
-      duration: 150,
-      ease: 'Power2',
-      onComplete: () => {
-        this.modalContainer?.setVisible(false);
-      },
-    });
   }
 
   /**
@@ -785,7 +553,8 @@ export class UIManager {
    * Destroys the UI manager and cleans up resources.
    */
   public destroy(): void {
+    this.evidenceBar?.destroy();
+    this.evidenceBar = null;
     this.uiContainer.destroy(true);
-    this.itemEntries.clear();
   }
 }
