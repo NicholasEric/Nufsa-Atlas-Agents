@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
 import { SceneKeys, ItemData, GameConfig } from '../types/game.types';
 import { UIManager } from '../system/UIManager';
-import { EvidenceBar } from '../system/EvidenceBar';
+import { CaseFile } from '../system/CaseFile';
 
 /**
  * RoomScene displays a single large room photo as a drag-to-pan view,
@@ -16,8 +16,8 @@ export class RoomScene extends Scene {
   private roomItems: ItemData[] = []; // items located in THIS room
   private collectedIds: Set<string> = new Set();
 
-  /** Shared bottom evidence bar (same component GameScene uses). */
-  private evidenceBar: EvidenceBar | null = null;
+  /** Shared evidence UI (Case File button + book) — same component GameScene uses. */
+  private evidenceBar: CaseFile | null = null;
 
   /** Item sprites placed on the room image, keyed by item id */
   private roomItemSprites: Map<string, Phaser.GameObjects.Sprite> = new Map();
@@ -59,7 +59,7 @@ export class RoomScene extends Scene {
     this.createRoomImage(w, h);
     this.createRoomItemSprites();
     this.createExitButton(w);
-    this.evidenceBar = new EvidenceBar(this, this.items, this.collectedIds);
+    this.evidenceBar = new CaseFile(this, this.items, this.collectedIds);
   }
 
   /**

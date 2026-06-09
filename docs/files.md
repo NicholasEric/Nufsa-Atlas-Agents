@@ -15,8 +15,8 @@
 | **system/** | |
 | `PlayerController.ts` | WASD + touch joystick, idle/run anims, feet-anchored origin, physics body, facing direction, detection origin. |
 | `ItemManager.ts` | Outdoor item spawn + `detectInArea` (box detection) + `collect` tween. (Also has unused hint/debug-cone helpers.) |
-| `EvidenceBar.ts` | **Shared** bottom evidence bar: icon slots (collected = item art + ✓; uncollected = dark "?"), tap-a-slot → self-contained description modal. Used by BOTH `UIManager` (GameScene) and `RoomScene` so they can't drift. `setCollected(id)` ticks a slot. |
-| `UIManager.ts` | Timer text, magnifier button, FOUND popup, travel/room buttons. Delegates the evidence bar to `EvidenceBar`. |
+| `CaseFile.ts` | **Shared** evidence UI: a bottom-left "Case File" button (with `n/total` count) that opens a paged, parchment-styled book — one item per page, ◀/▶ to flip; page shows the description always, a big "?" until found, and the icon + FOUND stamp once collected. Used by BOTH `UIManager` (GameScene) and `RoomScene`. `setCollected(id)` updates count + open page. (Replaced the old `EvidenceBar`.) |
+| `UIManager.ts` | Timer text, magnifier button, FOUND popup, travel/room buttons. Delegates the evidence UI to `CaseFile`. |
 | `AudioManager.ts` | Singleton SFX + music. All optional. |
 
 ## Assets (`public/assets/`)
@@ -24,13 +24,16 @@
 | Path | Notes |
 |------|-------|
 | `maps/japan/map-japan-2.json` | Primary outdoor map. **32×24 @ 32px = 1024×768.** Tileset: `tiles-japan`. Has `HiddenMove` + `Door1..4` trigger layers. |
-| `maps/japan/balcony.jpg`, `living-room.jpg`, `shop.jpg` | Named room photos (`room-japan-balcony` / `-living-room` / `-shop`), opened by Door1 / Door2 / Door3. Door4 has no photo yet → opens a generated `room-japan-placeholder`. |
+| `maps/japan/balcony.jpg`, `living-room.jpg`, `shop.jpg` | Named room photos (`room-japan-balcony` / `-living-room` / `-shop`), opened by Door1 / Door2 / Door3. Door4 has no photo yet → opens the shared generated `room-placeholder`. |
 | `maps/autumn/map-autumn.json` | Second outdoor map. **64×48 @ 16px = 1024×768.** Tilesets registered twice (`Autumn_Forest_Tiles` @ firstgid 1 **and** `_2` @ 2401, same image). Has `Water1` trigger. |
 | `maps/autumn/room-1.png` | 3200×800 wide pond photo (`room-autumn-1`). |
-| `maps/desert/map-desert.json` | **Unwired** third map (edited but not in code/cases). |
-| `maps/desert/room-1.jpg` | Desert room photo (for later). |
-| `maps/map-autumn.json`, `maps/map-japan*.json` | **Legacy top-level duplicates — ignore.** The real ones live under per-theme folders. |
-| `tiles/` | Tileset PNGs: `tiles-japan.png`, `Autumn_Forest_Tiles.png`, `Autumn_Forest_Objects.png`, `tiles-dessert-2.png` (desert, unused). |
+| `maps/desert/map-desert.json` | Wired (`desert` case, 512×384). Tileset embedded manually (two: `desert-doodles` + `desert-tiles`). `Door1` → `room-desert-1`. |
+| `maps/desert/room-1.jpg` | Desert room photo (`room-desert-1`). |
+| `maps/castle/map-castle.json` | Wired (`castle` case, 992×704). Single `spritefusion` tileset → `tiles-castle`. No rooms. |
+| `maps/dungeon/map-dungeon.json` | Wired (`dungeon` case, **320×208 — smaller than screen, zoomed up**). `spritefusion` → `tiles-dungeon`. `Door1` → placeholder room. |
+| `maps/island/map-island.json` | Wired (`island` case, **1856×1024 — larger than screen, zoomed down**). `spritefusion` → `tiles-island`. `Door1` → placeholder room. |
+| | _All maps now live in per-theme subfolders; the old top-level duplicate JSONs were deleted (2026-06-09)._ |
+| `tiles/` | Tileset PNGs: `tiles-japan`, `Autumn_Forest_Tiles/_Objects`, `tiles-dessert` + `tiles-dessert-2` (desert), `tiles-castle`, `tiles-dungeon`, `tiles-island`. |
 | `items/` | `japanese-<id>.png` item art. **Only 5 of 10 exist:** fan, hat, katana, origami, yukata. Missing: lantern, sake, daruma, bonsai, kitsune-mask (→ placeholder circles). |
 | `player/` | `Idle(1).png`, `Idle(2).png`, `Run(1..4).png` — 112×128 each. |
 | `fonts/font-2.otf` | Registered as `GameFont` via `@font-face` in `index.html`. |
@@ -44,8 +47,13 @@
 | `tiles-japan` | `tiles/tiles-japan.png` |
 | `autumn-map` | `maps/autumn/map-autumn.json` |
 | `autumn-tiles` / `autumn-objects` | `tiles/Autumn_Forest_Tiles.png` / `_Objects.png` |
+| `desert-map` / `desert-doodles` / `desert-tiles` | `maps/desert/map-desert.json` / `tiles/tiles-dessert.png` / `tiles/tiles-dessert-2.png` |
+| `castle-map` / `tiles-castle` | `maps/castle/map-castle.json` / `tiles/tiles-castle.png` |
+| `dungeon-map` / `tiles-dungeon` | `maps/dungeon/map-dungeon.json` / `tiles/tiles-dungeon.png` |
+| `island-map` / `tiles-island` | `maps/island/map-island.json` / `tiles/tiles-island.png` |
 | `room-japan-balcony` / `-living-room` / `-shop` | `maps/japan/balcony.jpg` / `living-room.jpg` / `shop.jpg` |
-| `room-japan-placeholder` | generated in BootScene (`createRoomPlaceholderTexture`) — Door4 until its photo exists |
+| `room-desert-1` | `maps/desert/room-1.jpg` |
+| `room-placeholder` | generated in BootScene (`createRoomPlaceholderTexture`) — Japan Door4, dungeon & island doors until real photos exist |
 | `room-autumn-1` | `maps/autumn/room-1.png` |
 | `player-idle-1/2`, `player-run-1..4` | `player/Idle(n).png`, `player/Run(n).png` |
 | `item_<id>` | `items/japanese-<id>.png` (from each item's `spriteKey`/`assetPath`) |

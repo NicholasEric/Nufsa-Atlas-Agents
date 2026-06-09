@@ -39,10 +39,17 @@ Three places must agree (see plan.md for the desert walkthrough):
 
 ## 4. Trigger zones (in the Tiled map JSON)
 
-Draw tiles on these specially-named invisible layers (any non-empty tile = active):
+Draw tiles on these specially-named invisible layers (any non-empty tile = active; names match **case-insensitively**, so `collision` or `Collision` both work):
 - **`Collision`** — blocks player movement.
-- **`HiddenMove`** — shows the travel button → sends player to `portalDestination`.
+- **`<Destination>Portal`** tile layers — travel triggers (see "Portals" below). `HiddenMove` is **no longer used**.
 - **`Door1`, `Door2`, … / `Water1`, …** — shows the room-entry button → opens the room photo mapped in `MAP_CONFIGS.doors`.
+
+### Portals (auto-discovered by name + spawn-back)
+Portals are **tile layers named `<Destination>Portal`** — e.g. `DesertPortal`, `AutumnPortal`, `JapanPortal`. The engine auto-discovers them: the prefix is the destination case id (`Japan` → `japan-2`, others identity), so **no code/config is needed** — just paint the layer in Tiled.
+- A map can have any number of portal layers → it branches to multiple maps. (Japan has Desert/Autumn/Island/Castle portals.)
+- Stepping onto a portal's tiles shows the travel button; pressing it travels there.
+- **Spawn-back:** on arrival you appear on the destination map's portal that leads *back* to where you came from. So make portals bidirectional — if `A` has a `BPortal`, give `B` an `APortal` (otherwise the arrival spawn falls back to ~(300,300)). The spawn point is the **center of that portal's painted tiles**.
+- An explicit `MAP_CONFIGS.portals` array (`{ layerName, destination, label? }`) still overrides discovery if you ever need custom names/labels.
 
 To change *which room a door opens* or *its button label*, edit the matching `doors[]` entry in `MAP_CONFIGS` (`imageKey`, `label`). The `imageKey` is BOTH the loaded texture key AND the `location.area` used to match room items — they must be identical.
 
@@ -52,12 +59,19 @@ To change *which room a door opens* or *its button label*, edit the matching `do
 
 | Knob | Where | Current | Effect |
 |------|-------|---------|--------|
-| Start X / Y | `GameScene.createPlayer()` → `new PlayerController(this, { startX, startingY })` | 300, 300 | Spawn point (same for every map). |
-| Move speed | same call, `speed` | 150 | Pixels/sec. |
-| Sprite scale | `PlayerController` ctor `setScale(...)` | 0.3 | On-screen size. |
+| Start X / Y | `GameScene.createPlayer()` | `min(300, mapW/2)`, `min(300, mapH/2)` | Spawn point, clamped so it's never outside small maps (e.g. dungeon). Add a per-map override here if a spawn lands on a wall. |
+| Move speed | `new PlayerController(this, { speed })` | 150 | Pixels/sec. |
+| Sprite scale | `GameScene.createPlayer()` `playerScale = 0.3 / fitZoom` | ~34px on screen | Scaled by `1/zoom` so the player is a consistent on-screen size on every map (matches japan). Change the `0.3` base to resize the player globally; `PlayerController` defaults to 0.3 if no scale is passed. |
 | Feet anchor | `VISIBLE_FEET_Y` | 120 | Y row treated as the feet; aligns triggers/collision. |
-| Hitbox | `bodyW`, `bodyH` | 96, 96 | Collision body size. *(Currently being tuned — large value is intentional for now.)* |
-| World clamp | `update()` `Phaser.Math.Clamp(..., 0, 1024 / 0, 768)` | viewport | Caps how far the player can walk. **Widen for maps bigger than 1024×768.** |
+| Hitbox | `bodyW`, `bodyH` | 96, 96 | Collision body size. *(Owner is tuning — large value intentional.)* |
+| World clamp | auto from map size | `mapWidth/mapHeight` | `GameScene.createPlayer()` passes the tilemap's pixel size into `PlayerController`, which clamps the player to it. No hardcoded value to edit. |
+
+### Camera (per map) — zoom-to-fit + UI camera
+`GameScene.setupCameras()` (called at the end of `create()`) makes every map present at a uniform 1024×768:
+- The **world camera** (`cameras.main`) zooms each map to fit the screen — `zoom = min(viewW/mapW, viewH/mapH)` — centered and static. Small maps (dungeon, desert) fill the view; large maps (island) shrink to fit. Maps that aren't 4:3 get thin letterbox bars (the camera background shows through).
+- A second **UI camera** (`this.uiCamera`) renders the HUD at zoom 1 so the timer / evidence bar / magnifier never scale. Each camera `ignore()`s the other's objects (world = tilemap layers + player + items; UI = `UIManager.getCameraObjects()` + the player's joystick).
+- **Gotcha:** any *new* display object created in GameScene must land on the right camera or it double-draws. World objects are collected in `setupCameras()`; transient HUD (popups, game-over, travel/room buttons) must be nested in `UIManager`'s `uiContainer` (already done) so ignoring that container covers them.
+- To switch from "fit" (letterbox) to "fill" (cover, crops edges), change `Math.min(...)` to `Math.max(...)` in `setupCameras()`.
 
 ## 6. Detection / magnifier reach
 
@@ -77,9 +91,9 @@ To change *which room a door opens* or *its button label*, edit the matching `do
 | Room item size | `RoomScene.createRoomItemSprites` `targetSize` | 56 px |
 | Drag-vs-tap threshold | `RoomScene.createRoomImage` | 3 px |
 
-## 9. Popups, bar, modals
+## 9. Popups, evidence book, modals
 
-- **Evidence bar (shared):** `src/system/EvidenceBar.ts` — one component used by GameScene (via `UIManager`) and RoomScene. Tune slot size/pitch (`pitch`, `slotSize` in `build()`), panel height, the "?" placeholder, collected colors, and the tap-to-open description modal here. Editing this changes the bar **everywhere** at once.
+- **Case File (shared evidence UI):** `src/system/CaseFile.ts` — one component used by GameScene (via `UIManager`) and RoomScene. Tune the bottom-left button (`createButton`: size/position/colors), the parchment book (`createBook`: page size `pw/ph`, colors `0xf2e6c8`, fonts), the per-page layout (`updatePage`: icon fit size, "?" glyph, FOUND stamp), and open/flip animations (`open`, `flip`). Editing this changes the evidence UI **everywhere** at once.
 - **FOUND popup & magnifier glow:** `src/system/UIManager.ts` (`createItemPopup` timings, glow).
 
 ## 10. Audio
@@ -89,3 +103,24 @@ To change *which room a door opens* or *its button label*, edit the matching `do
 ## 11. Resolution / kiosk
 
 **File: `src/main.ts`** — `width/height` (1024×768), `Scale.FIT`, `activePointers`, double-tap fullscreen, context-menu/touch-zoom blocking.
+
+## 12. Editing maps in Tiled
+
+The maps are [Tiled](https://www.mapeditor.org) JSON. Edit them when you need to add/fix collision, portals, doors, or change a map's size/shape.
+
+**One-time setup per map — fix the tileset image path so Tiled can render it.** The embedded tilesets point `image` at a `…/Downloads/…png` path (metadata Phaser ignores, but **Tiled needs it to display tiles**). Every map now lives one level deep (`maps/<theme>/map-*.json`), so repoint `image` to `"../../tiles/<the-png>"` (e.g. `"../../tiles/tiles-castle.png"`). Then `File → Open` the `.json` in Tiled.
+
+**Special layer names the game looks for** (case-insensitive):
+- `Collision` — paint any tile where the player should be blocked (any non-empty tile blocks). Invisible at runtime.
+- `HiddenMove` — paint tiles for the travel-portal trigger zone.
+- `Door1`, `Door2`, … (or `Water1`) — paint tiles at a doorway; then map it to a room image in `GameScene.MAP_CONFIGS.doors`.
+- All **visible** layers must be listed in that map's `MAP_CONFIGS.layerDepths`, or they won't render.
+
+**Common tasks:**
+- *Add/fix collision:* New Tile Layer named `Collision` → pick a tile → paint over walls. (Set the layer's opacity to ~50% while editing; the game hides it.)
+- *Resize a map:* `Map → Resize Map` (set width/height in tiles, choose an anchor). To make a map native 1024×768, use the grid for its tile size: 32px→32×24, 16px→64×48, 64px→16×12.
+- *Keep it JSON:* `File → Save` (don't switch to `.tmx`). Keep tilesets **embedded** where possible.
+- *External-tileset safety net:* Tiled tends to re-add the original tileset as an external `…/Downloads/*.tsx` reference when you paint with it. Phaser can't load those, so `GameScene.stripExternalTilesets()` automatically drops them on load (you'll see a console warning). **Caveat:** any tiles painted from that external tileset won't render — so paint **visible** tiles only from the embedded tilesets. Invisible trigger tiles (portals, collision, doors) are unaffected since they never render.
+- Restart the dev server after editing (maps don't hot-reload).
+
+**Should you standardize all maps in Tiled?** Not required — `setupCameras()` already presents every map at 1024×768 with a consistent ~1-tile player. Editing in Tiled is worth it when you (a) need to place/fix collision/portals/doors anyway, or (b) want to remove the letterbox bars / upscale softness on a specific map by rebuilding it natively to 4:3 / a standard size. Making *all* maps one tile size + 1024×768 would remove zoom entirely (cleanest look) but is real redraw work — do it selectively for the maps that bother you most.

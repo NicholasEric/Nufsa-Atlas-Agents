@@ -28,14 +28,13 @@ src/
 └── data/cases.json            # global items[] + per-map cases{}
 
 public/assets/
-├── maps/
-│   ├── japan/
-│   │   ├── map-japan-2.json   # Tiled JSON, primary outdoor map (32x24 @ 32px)
-│   │   └── room-1..4.jpg      # large room photos (3000–3800 px wide)
-│   ├── autumn/
-│   │   ├── map-autumn.json    # Tiled JSON, second outdoor map (64x48 @ 16px)
-│   │   └── room-1.png         # 3200x800 wide pond photo
-│   └── (legacy top-level files exist as duplicates — ignore)
+├── maps/                      # one per-theme subfolder per map (no top-level map JSONs)
+│   ├── japan/                 # map-japan-2.json + balcony/living-room/shop room photos
+│   ├── autumn/                # map-autumn.json + room-1.png pond photo
+│   ├── desert/                # map-desert.json + room-1.jpg
+│   ├── castle/                # map-castle.json (no rooms)
+│   ├── dungeon/               # map-dungeon.json (Door1 → placeholder room)
+│   └── island/                # map-island.json (Door1 → placeholder room)
 ├── tiles/                     # tileset PNGs (Autumn_Forest_Tiles, _Objects, tiles-japan)
 ├── items/                     # japanese-<id>.png item art
 ├── player/                    # Idle(1).png, Idle(2).png, Run(1..4).png — 112x128 each

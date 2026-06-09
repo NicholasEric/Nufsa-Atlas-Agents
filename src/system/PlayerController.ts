@@ -16,6 +16,8 @@ export class PlayerController {
 
   /** Virtual joystick for touch controls */
   private joystickZone: Phaser.GameObjects.Zone | null = null;
+  /** Visual joystick ring (screen-space; kept on the UI camera). */
+  private joystickBase: Phaser.GameObjects.Graphics | null = null;
   private joystickOrigin: Phaser.Math.Vector2 | null = null;
   private joystickCurrent: Phaser.Math.Vector2 | null = null;
   private joystickActive: boolean = false;
@@ -24,7 +26,14 @@ export class PlayerController {
   /** Callback when player collects something */
   public onItemCollected?: () => void;
 
+  /** Map bounds (px) the player is clamped within. Set from config. */
+  private mapWidth: number;
+  private mapHeight: number;
+
   constructor(scene: Phaser.Scene, config: PlayerConfig) {
+    this.mapWidth = config.mapWidth ?? 1024;
+    this.mapHeight = config.mapHeight ?? 768;
+
     // Create player sprite. Source PNGs are 112x128 with ~15px of
     // transparent padding BELOW the visible feet. Anchoring the origin
     // to the visible feet (texture y=112) — instead of the PNG bottom —
@@ -36,8 +45,10 @@ export class PlayerController {
     this.sprite = scene.add.sprite(config.startX, config.startingY, config.spriteKey);
     this.sprite.setDepth(0); // Render above tiles
     this.sprite.setOrigin(0.5, VISIBLE_FEET_Y / PNG_H);
-    // Source PNGs are 112x128; scale down to roughly 1.5 tiles tall.
-    this.sprite.setScale(0.3);
+    // Source PNGs are 112x128; scale down. Default 0.3 is tuned for
+    // 32px-tile maps; GameScene overrides per map so the player stays
+    // ~1 tile tall regardless of the map's tile size.
+    this.sprite.setScale(config.scale ?? 0.3);
 
     // Start the idle animation immediately so the sprite isn't a static frame.
     this.sprite.anims.play('player-idle', true);
@@ -88,6 +99,7 @@ export class PlayerController {
     joystickBase.setDepth(99);
     joystickBase.setScrollFactor(0);
     joystickBase.setAlpha(0); // Hidden until touch
+    this.joystickBase = joystickBase;
 
     // Touch start - initialize joystick position
     scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
@@ -222,10 +234,10 @@ export class PlayerController {
       this.sprite.anims.play('player-idle', true);
     }
 
-    // Keep player in bounds
+    // Keep player within the current map's pixel bounds.
     const bounds = {
-      x: Phaser.Math.Clamp(this.sprite.x, 0, 1024),
-      y: Phaser.Math.Clamp(this.sprite.y, 0, 768),
+      x: Phaser.Math.Clamp(this.sprite.x, 0, this.mapWidth),
+      y: Phaser.Math.Clamp(this.sprite.y, 0, this.mapHeight),
     };
     this.sprite.setPosition(bounds.x, bounds.y);
   }
@@ -277,6 +289,14 @@ export class PlayerController {
    */
   public getPosition(): Phaser.Math.Vector2 {
     return new Phaser.Math.Vector2(this.sprite.x, this.sprite.y);
+  }
+
+  /**
+   * Screen-space (HUD) objects owned by the player — currently the touch
+   * joystick ring. GameScene keeps these on the un-zoomed UI camera.
+   */
+  public getScreenSpaceObjects(): Phaser.GameObjects.GameObject[] {
+    return this.joystickBase ? [this.joystickBase] : [];
   }
 
   /**

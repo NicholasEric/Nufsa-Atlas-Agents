@@ -106,6 +106,12 @@ export interface PlayerConfig {
   speed: number;
   /** Texture key for the player sprite */
   spriteKey: string;
+  /** Map width in pixels; player is clamped to it. Defaults to 1024. */
+  mapWidth?: number;
+  /** Map height in pixels; player is clamped to it. Defaults to 768. */
+  mapHeight?: number;
+  /** Sprite scale. Defaults to 0.3 (tuned for 32px-tile maps). */
+  scale?: number;
 }
 
 // ============================================================================

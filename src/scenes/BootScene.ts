@@ -62,9 +62,8 @@ export class BootScene extends Scene {
     // Store cases config
     this.casesConfig = casesData;
 
-    // Load Tiled maps + tilesets.
-    // Original japan map kept commented for reference.
-    // this.load.tilemapTiledJSON('japan-map', 'assets/maps/map-japan.json');
+    // Load Tiled maps + tilesets. Every map lives in its own per-theme
+    // subfolder under assets/maps/.
     //
     // Primary: Japan-2 (Kyoto District). Has a HiddenMove portal layer leading
     // to autumn, plus Door1..Door4 layers triggering room views.
@@ -76,6 +75,21 @@ export class BootScene extends Scene {
     this.load.image('autumn-tiles', 'assets/tiles/Autumn_Forest_Tiles.png');
     this.load.image('autumn-objects', 'assets/tiles/Autumn_Forest_Objects.png');
 
+    // Desert (512x384). Tileset embedded manually in the JSON; two images.
+    this.load.tilemapTiledJSON('desert-map', 'assets/maps/desert/map-desert.json');
+    this.load.image('desert-doodles', 'assets/tiles/tiles-dessert.png');
+    this.load.image('desert-tiles', 'assets/tiles/tiles-dessert-2.png');
+    this.load.image('room-desert-1', 'assets/maps/desert/room-1.jpg');
+
+    // Castle (992x704), Dungeon (320x208), Island (1856x1024). Each uses a
+    // single embedded "spritefusion" tileset → one image apiece.
+    this.load.tilemapTiledJSON('castle-map', 'assets/maps/castle/map-castle.json');
+    this.load.image('tiles-castle', 'assets/tiles/tiles-castle.png');
+    this.load.tilemapTiledJSON('dungeon-map', 'assets/maps/dungeon/map-dungeon.json');
+    this.load.image('tiles-dungeon', 'assets/tiles/tiles-dungeon.png');
+    this.load.tilemapTiledJSON('island-map', 'assets/maps/island/map-island.json');
+    this.load.image('tiles-island', 'assets/tiles/tiles-island.png');
+
     // Room photos shown when the player enters a Door / Water interaction
     // zone. Native sizes are large (1300-3800 px wide); RoomScene scrolls.
     // Door4's room image hasn't been created yet → it opens a generated
@@ -84,6 +98,11 @@ export class BootScene extends Scene {
     this.load.image('room-japan-living-room', 'assets/maps/japan/living-room.jpg');
     this.load.image('room-japan-shop', 'assets/maps/japan/shop.jpg');
     this.load.image('room-autumn-1', 'assets/maps/autumn/room-1.png');
+
+    // Folder icon for the Case File button (bottom-left evidence UI).
+    this.load.image('casefile-folder', 'assets/folder/folder.png');
+    // Magnifying-glass icon for the search button (bottom-right).
+    this.load.image('magnifier-icon', 'assets/magnifiying-glass.png');
 
     // Load player animation frames (separate PNGs, side-view only).
     // Frame keys are referenced by the animations created in create().
@@ -171,15 +190,15 @@ export class BootScene extends Scene {
   }
 
   /**
-   * Bakes a "Room coming soon" placeholder into the texture key
-   * 'room-japan-placeholder'. RoomScene renders this like any other room
-   * photo (drag-to-pan, edge-clamped) so Door4 still opens cleanly until
-   * its real image is added.
+   * Bakes a generic "Room coming soon" placeholder into the texture key
+   * 'room-placeholder'. RoomScene renders this like any other room photo
+   * (drag-to-pan, edge-clamped) so any door whose real image isn't ready
+   * yet (Japan Door4, dungeon, island) still opens cleanly.
    */
   private createRoomPlaceholderTexture(): void {
     const w = 1280;
     const h = 720;
-    const key = 'room-japan-placeholder';
+    const key = 'room-placeholder';
     if (this.textures.exists(key)) return;
 
     const rt = this.make.renderTexture({ width: w, height: h }, false);

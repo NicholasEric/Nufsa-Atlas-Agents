@@ -3,7 +3,15 @@
     "allow": [
       "Bash(ls public/assets/items/)",
       "Bash(ls public/assets/)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(node -e ' *)",
+      "Bash(timeout 18 npx vite --port 5176)",
+      "Bash(ls -la public/assets/folder/)",
+      "Bash(node -e 'const fs=require\\(\"fs\"\\);try{const b=fs.readFileSync\\(\"public/assets/folder/folder.png\"\\);console.log\\(\"folder.png \"+b.readUInt32BE\\(16\\)+\"x\"+b.readUInt32BE\\(20\\)\\);}catch\\(e\\){console.log\\(\"ERR \"+e.message\\);}')",
+      "Bash(ls -la public/assets/magnifying-glass.png)",
+      "Bash(node -e 'const b=require\\(\"fs\"\\).readFileSync\\(\"public/assets/magnifying-glass.png\"\\);console.log\\(\"magnifying-glass.png \"+b.readUInt32BE\\(16\\)+\"x\"+b.readUInt32BE\\(20\\)\\);')"
     ]
   }
 }

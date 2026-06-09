@@ -1,11 +1,11 @@
 import { ItemData } from '../types/game.types';
-import { EvidenceBar } from './EvidenceBar';
+import { CaseFile } from './CaseFile';
 
 /**
  * UIManager handles all UI components.
  * Timer, magnifier button, travel/room buttons, and the FOUND popup.
- * The bottom evidence bar (+ its description modal) is delegated to the
- * shared EvidenceBar component so it matches RoomScene exactly.
+ * The evidence UI (Case File button + paged book) is delegated to the
+ * shared CaseFile component so it matches RoomScene exactly.
  */
 export class UIManager {
   /** Container for all UI elements */
@@ -14,11 +14,11 @@ export class UIManager {
   /** Timer display */
   private timerText: Phaser.GameObjects.Text | null = null;
 
-  /** Shared bottom evidence bar (built in populateItemList). */
-  private evidenceBar: EvidenceBar | null = null;
+  /** Shared evidence UI: Case File button + paged book (built in populateItemList). */
+  private evidenceBar: CaseFile | null = null;
 
-  /** Magnifier button */
-  private magnifierBtn: Phaser.GameObjects.Container | null = null;
+  /** Magnifier button (the magnifying-glass image) + its glow behind it. */
+  private magnifierBtn: Phaser.GameObjects.Image | null = null;
   private magnifierGlow: Phaser.GameObjects.Graphics | null = null;
 
   /** Callback when magnifier is pressed */
@@ -80,7 +80,7 @@ export class UIManager {
   public populateItemList(scene: Phaser.Scene, items: ItemData[]): void {
     this.evidenceBar?.destroy();
     const collectedIds = items.filter(it => it.collected).map(it => it.id);
-    this.evidenceBar = new EvidenceBar(scene, items, collectedIds, {
+    this.evidenceBar = new CaseFile(scene, items, collectedIds, {
       onModalStateChanged: open => this.onModalStateChanged?.(open),
     });
   }
@@ -95,58 +95,39 @@ export class UIManager {
     const padding = 20;
 
     const btnX = screenWidth - padding - btnSize / 2;
-    const btnY = screenHeight - padding - btnSize / 2 - 50; // Above item panel
+    const btnY = screenHeight - padding - btnSize / 2 - 50; // Above where the bottom UI sits
 
-    // Glow effect (behind button)
+    // Glow effect (behind button), pulses green when an item is in range.
     this.magnifierGlow = scene.add.graphics();
     this.magnifierGlow.setDepth(998);
     this.magnifierGlow.setScrollFactor(0);
 
-    // Button background circle - this is the interactive visual element
-    const btnBg = scene.add.circle(btnX, btnY, btnSize / 2, 0x4a4a6a);
-    btnBg.setStrokeStyle(3, 0x8888aa);
-    btnBg.setDepth(999);
-    btnBg.setScrollFactor(0);
-    btnBg.setInteractive({ useHandCursor: true });
+    // Magnifying-glass image as the button.
+    const icon = scene.add.image(btnX, btnY, 'magnifier-icon');
+    const natural = Math.max(icon.width, icon.height) || btnSize;
+    const baseScale = btnSize / natural;
+    icon.setScale(baseScale);
+    icon.setDepth(1000);
+    icon.setScrollFactor(0);
+    icon.setInteractive({ useHandCursor: true });
+    this.magnifierBtn = icon;
 
-    // Magnifier icon (simple circle with handle)
-    const iconGroup = scene.add.container(btnX, btnY);
-
-    // Glass part
-    const glass = scene.add.circle(0, 0, 25, 0x88ccff, 0.6);
-    glass.setStrokeStyle(4, 0xaaddff);
-
-    // Handle
-    const handle = scene.add.rectangle(18, 18, 8, 25, 0x8888aa);
-    handle.setRotation(Math.PI / 4);
-
-    iconGroup.add([glass, handle]);
-    iconGroup.setDepth(1000);
-    iconGroup.setScrollFactor(0);
-
-    // Track magnifier as the visual circle (used for glow positioning)
-    this.magnifierBtn = iconGroup;
-
-    // Press animation - tween the icon group for visual feedback
-    btnBg.on('pointerdown', () => {
+    // Press animation for tactile feedback.
+    icon.on('pointerdown', () => {
       scene.tweens.add({
-        targets: [btnBg, iconGroup],
-        scale: 0.9,
+        targets: icon,
+        scale: baseScale * 0.9,
         duration: 100,
         yoyo: true,
       });
       this.onMagnifierPressed?.();
     });
 
-    // Hover effect
-    btnBg.on('pointerover', () => {
-      btnBg.setStrokeStyle(3, 0xaabbcc);
-    });
-    btnBg.on('pointerout', () => {
-      btnBg.setStrokeStyle(3, 0x8888aa);
-    });
+    // Hover effect — slight grow.
+    icon.on('pointerover', () => icon.setScale(baseScale * 1.08));
+    icon.on('pointerout', () => icon.setScale(baseScale));
 
-    this.uiContainer.add([this.magnifierGlow, btnBg, iconGroup]);
+    this.uiContainer.add([this.magnifierGlow, icon]);
   }
 
   /**
@@ -183,6 +164,17 @@ export class UIManager {
    */
   public updateItemEntry(itemId: string, collected: boolean): void {
     this.evidenceBar?.setCollected(itemId, collected);
+  }
+
+  /**
+   * All HUD display roots (main container + evidence bar). GameScene
+   * assigns these to the un-zoomed UI camera so the per-map world zoom
+   * doesn't scale the HUD.
+   */
+  public getCameraObjects(): Phaser.GameObjects.GameObject[] {
+    const objs: Phaser.GameObjects.GameObject[] = [this.uiContainer];
+    if (this.evidenceBar) objs.push(...this.evidenceBar.getDisplayObjects());
+    return objs;
   }
 
   /**
@@ -383,10 +375,15 @@ export class UIManager {
    */
   public showItemPopup(scene: Phaser.Scene, item: ItemData, onComplete?: () => void): void {
     this.onModalStateChanged?.(true);
-    UIManager.createItemPopup(scene, item, () => {
-      this.onModalStateChanged?.(false);
-      onComplete?.();
-    });
+    UIManager.createItemPopup(
+      scene,
+      item,
+      () => {
+        this.onModalStateChanged?.(false);
+        onComplete?.();
+      },
+      this.uiContainer
+    );
   }
 
   /**
@@ -398,7 +395,8 @@ export class UIManager {
   public static createItemPopup(
     scene: Phaser.Scene,
     item: ItemData,
-    onComplete?: () => void
+    onComplete?: () => void,
+    parent?: Phaser.GameObjects.Container
   ): void {
     const screenWidth = scene.scale.width;
     const screenHeight = scene.scale.height;
@@ -406,6 +404,9 @@ export class UIManager {
     const popupContainer = scene.add.container(0, 0);
     popupContainer.setDepth(2500);
     popupContainer.setScrollFactor(0);
+    // When given, nest the popup in the HUD container so the world camera
+    // (which ignores that container) doesn't draw a zoomed duplicate.
+    if (parent) parent.add(popupContainer);
 
     // Dim backdrop. Made interactive so it swallows pointer input and
     // prevents stray clicks (e.g., the magnifier button) during the popup.
@@ -533,6 +534,10 @@ export class UIManager {
     scoreText.setOrigin(0.5);
     scoreText.setDepth(3001);
     scoreText.setScrollFactor(0);
+
+    // Keep the game-over UI on the HUD container so the zoomed world
+    // camera (which ignores it) doesn't draw a scaled duplicate.
+    this.uiContainer.add([overlay, messageText, scoreText]);
 
     // Fade out and remove after 3 seconds
     scene.time.delayedCall(3000, () => {

@@ -94,6 +94,34 @@
       "timeLimitSeconds": 300,
       "mapKey": "autumn-map",
       "ambientAudioKey": "ambient-japan",
+      "portalDestination": "desert"
+    },
+    "desert": {
+      "location": "Desert Oasis",
+      "timeLimitSeconds": 300,
+      "mapKey": "desert-map",
+      "ambientAudioKey": "ambient-japan",
+      "portalDestination": "castle"
+    },
+    "castle": {
+      "location": "Castle Keep",
+      "timeLimitSeconds": 300,
+      "mapKey": "castle-map",
+      "ambientAudioKey": "ambient-japan",
+      "portalDestination": "dungeon"
+    },
+    "dungeon": {
+      "location": "Dungeon",
+      "timeLimitSeconds": 300,
+      "mapKey": "dungeon-map",
+      "ambientAudioKey": "ambient-japan",
+      "portalDestination": "island"
+    },
+    "island": {
+      "location": "Island",
+      "timeLimitSeconds": 300,
+      "mapKey": "island-map",
+      "ambientAudioKey": "ambient-japan",
       "portalDestination": "japan-2"
     }
   }

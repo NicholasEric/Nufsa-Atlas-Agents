@@ -9,6 +9,7 @@ Start here, then read the doc you need:
 | [architecture.md](architecture.md) | How the game is structured: scenes, global state, data flow, gameplay loop. |
 | [files.md](files.md) | Every source/asset file and what it does — the map of the codebase. |
 | [tuning.md](tuning.md) | **Manual tuning guide** — where to change maps, item positions, player, timer, sizes, etc. |
+| [item-placements.md](item-placements.md) | Where every item is (map/room + coords + %position + ASCII position maps). Generated from `cases.json`. |
 | [plan.md](plan.md) | Current state, known issues, decisions made, and the roadmap to finish the game. |
 
 > The authoritative quick-reference also lives in [`/CLAUDE.md`](../CLAUDE.md) at the repo root. These docs expand on it.

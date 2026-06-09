@@ -57,6 +57,14 @@ export class ItemManager {
   }
 
   /**
+   * Returns the live item sprites (world objects). Used by GameScene to
+   * assign them to the zoomed world camera.
+   */
+  public getSprites(): Phaser.GameObjects.Sprite[] {
+    return [...this.itemSprites.values()];
+  }
+
+  /**
    * Enables debug visualization for detection cone.
    */
   public enableDebug(scene: Phaser.Scene): void {
