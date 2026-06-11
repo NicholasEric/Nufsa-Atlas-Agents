@@ -15,8 +15,9 @@
 | **system/** | |
 | `PlayerController.ts` | WASD + touch joystick, idle/run anims, feet-anchored origin, physics body, facing direction, detection origin. |
 | `ItemManager.ts` | Outdoor item spawn + `detectInArea` (box detection) + `collect` tween. (Also has unused hint/debug-cone helpers.) |
-| `CaseFile.ts` | **Shared** evidence UI: a bottom-left "Case File" button (with `n/total` count) that opens a paged, parchment-styled book — one item per page, ◀/▶ to flip; page shows the description always, a big "?" until found, and the icon + FOUND stamp once collected. Used by BOTH `UIManager` (GameScene) and `RoomScene`. `setCollected(id)` updates count + open page. (Replaced the old `EvidenceBar`.) |
-| `UIManager.ts` | Timer text, magnifier button, FOUND popup, travel/room buttons. Delegates the evidence UI to `CaseFile`. |
+| `CaseFile.ts` | **Shared** evidence UI: a bottom-left "Case File" button (with `n/total` count) that opens a parchment book with two views — a **5×4 grid** of all item slots (icon once found, "?" until then), and a per-item **detail page** (name + description, big "?"→icon + FOUND stamp) reached by tapping a slot, with ◀/▶ to flip and "‹ All" back to the grid. Used by BOTH `UIManager` (GameScene) and `RoomScene`. `setCollected(id)` refreshes count + grid + open page. |
+| `UIManager.ts` | Timer text, the SEARCH pill button (+ green proximity glow), FOUND popup, travel/room buttons, one-time button hints. Delegates the evidence UI to `CaseFile`. |
+| `uiButtons.ts` | `createPillButton()` — shared builder for the gold-trimmed corner "pill" buttons (icon + label + optional count, shadow, hover/press, idle breathing glow). Used by the SEARCH button (`UIManager`) and the CASE FILE button (`CaseFile`) so they match. |
 | `AudioManager.ts` | Singleton SFX + music. All optional. |
 
 ## Assets (`public/assets/`)

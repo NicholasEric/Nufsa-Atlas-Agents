@@ -11,7 +11,8 @@
       "Bash(ls -la public/assets/folder/)",
       "Bash(node -e 'const fs=require\\(\"fs\"\\);try{const b=fs.readFileSync\\(\"public/assets/folder/folder.png\"\\);console.log\\(\"folder.png \"+b.readUInt32BE\\(16\\)+\"x\"+b.readUInt32BE\\(20\\)\\);}catch\\(e\\){console.log\\(\"ERR \"+e.message\\);}')",
       "Bash(ls -la public/assets/magnifying-glass.png)",
-      "Bash(node -e 'const b=require\\(\"fs\"\\).readFileSync\\(\"public/assets/magnifying-glass.png\"\\);console.log\\(\"magnifying-glass.png \"+b.readUInt32BE\\(16\\)+\"x\"+b.readUInt32BE\\(20\\)\\);')"
+      "Bash(node -e 'const b=require\\(\"fs\"\\).readFileSync\\(\"public/assets/magnifying-glass.png\"\\);console.log\\(\"magnifying-glass.png \"+b.readUInt32BE\\(16\\)+\"x\"+b.readUInt32BE\\(20\\)\\);')",
+      "Bash(node -e 'const c=JSON.parse\\(require\\(\"fs\"\\).readFileSync\\(\"./src/data/cases.json\",\"utf8\"\\)\\);c.items.forEach\\(it=>console.log\\(it.id.padEnd\\(16\\)+\" spriteKey=\"+it.spriteKey.padEnd\\(22\\)+\" assetPath=\"+it.assetPath\\)\\);')"
     ]
   }
 }

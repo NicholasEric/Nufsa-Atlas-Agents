@@ -26,14 +26,14 @@ _Last updated: 2026-06-08._
 | 1 | ✅ Fixed | ~~Japan room wiring broken.~~ Done: Door1→balcony, Door2→living-room, Door3→shop; Door4 opens a generated `room-japan-placeholder`. 6 room items redistributed 2/2/2 with in-bounds coords. |
 | 9 | ✅ Fixed | ~~Evidence bar inert in rooms.~~ Then redesigned: the shared component is now `CaseFile` — a bottom-left button opening a paged parchment book (description + "?" until found, icon + FOUND stamp once collected). Shared by GameScene + RoomScene. |
 | 13 | ✅ Done | **Multi-destination portals.** Auto-discovered from `<Destination>Portal` tile layers (Japan→japan-2); `HiddenMove` dropped. On travel the player spawns on the destination's return portal ("spawn-back"). `MAP_CONFIGS.portals[]` still overrides if needed. |
-| 2 | 🟡 | **5 of 10 item PNGs missing** (`lantern, sake, daruma, bonsai, kitsune-mask`) → placeholder circles. |
+| 2 | ✅ Done | ~~5 item PNGs missing.~~ Roster reworked to **20 themed items**, all with real art (the 5 art-less placeholders were dropped). One region's items per map: Japan(6), Autumn(3+origami), Desert(3), Castle(2), Dungeon(3), Island(3). Cultural/atlas-flavored descriptions. |
 | 3 | ✅ Fixed | ~~Desert map half-added.~~ Tileset embedded (2 images), wired into `cases.json` / `MAP_CONFIGS` / `BootScene`; `Door1` → `room-desert-1`. |
 | 4 | ⚪ | **Room item x/y are guessed**, not visually placed on the photos. |
 | 5 | ⚪ | No start/title screen or attract loop (kiosk nicety). |
 | 8 | 🟡 | **`npm run build` fails** — `main.ts` uses top-level `await` but the esbuild/Vite `build.target` rejects it (`es2020`/chrome87…). `npm run dev` works fine. Fix: set `build.target: 'esnext'` in `vite.config`, or restructure `main.ts` to avoid top-level await. |
 | 6 | ✅ Fixed | ~~No camera follow / hardcoded 1024×768 clamp.~~ GameScene now sets per-map camera + world bounds (center static if it fits, follow if larger); PlayerController clamps to `mapWidth/mapHeight` from config. |
 | 7 | ⚪ | No up/down player sprites (keeps last horizontal facing — by design for now). |
-| 10 | ⚪ | New maps (desert/castle/dungeon/island) are **explorable-only** — no items yet, and their layer depths + spawn points are first-pass guesses (tunable in `MAP_CONFIGS`). |
+| 10 | 🟡 | New maps now have items, but their **positions are first-pass guesses** — desert/autumn items in rooms, castle/dungeon/island items outdoors (dungeon's are on a tiny 320×208 map and may overlap walls). Retune via `docs/item-placements.md`. Layer depths also still first-pass. |
 | 12 | ✅ Fixed | ~~Maps looked odd at different sizes.~~ `setupCameras()` zooms each map to fit 1024×768 (centered, static) and renders the HUD on a separate un-zoomed UI camera. Non-4:3 maps get thin letterbox bars; flip `min`→`max` in `setupCameras` for crop-to-fill instead. |
 | 11 | ⚪ | Timer is **shared across all 6 maps** (carries through travel). Traversing the full loop in 5 min is tight; revisit per-map time / limit when items land on the new maps. |
 

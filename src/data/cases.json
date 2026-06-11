@@ -17,6 +17,14 @@
       "location": { "type": "room", "area": "room-japan-living-room", "x": 1200, "y": 900 }
     },
     {
+      "id": "dragon",
+      "name": "Ryū Dragon",
+      "description": "A carved Eastern dragon. In Japanese myth the ryū commands the rain and brings good fortune.",
+      "spriteKey": "item_dragon",
+      "assetPath": "items/japanese-dragon.png",
+      "location": { "type": "room", "area": "room-japan-living-room", "x": 2400, "y": 700 }
+    },
+    {
       "id": "fan",
       "name": "Torn Paper Fan",
       "description": "A decorative fan with cherry blossom patterns. Several ribs are broken.",
@@ -41,44 +49,116 @@
       "location": { "type": "room", "area": "room-autumn-1", "x": 1100, "y": 400 }
     },
     {
-      "id": "lantern",
-      "name": "Paper Lantern",
-      "description": "A chochin lantern, its washi paper torn and the candle long since burned out.",
-      "spriteKey": "item_lantern",
-      "assetPath": "items/japanese-lantern.png",
-      "location": { "type": "room", "area": "room-autumn-1", "x": 2300, "y": 400 }
+      "id": "norigae",
+      "name": "Norigae",
+      "description": "An ornamental tassel that Korean women tie to their hanbok for beauty and good luck.",
+      "spriteKey": "item_norigae",
+      "assetPath": "items/autumn-norigae.png",
+      "location": { "type": "room", "area": "room-autumn-1", "x": 500, "y": 400 }
     },
     {
-      "id": "sake",
-      "name": "Sake Flask",
-      "description": "A ceramic tokkuri half-full of cold sake. A faint lipstick mark stains the rim.",
-      "spriteKey": "item_sake",
-      "assetPath": "items/japanese-sake.png",
-      "location": { "type": "room", "area": "room-japan-shop", "x": 950, "y": 450 }
+      "id": "syrup",
+      "name": "Maple Syrup",
+      "description": "A tin of maple syrup, boiled from the sap of autumn maples — a North American staple.",
+      "spriteKey": "item_syrup",
+      "assetPath": "items/autumn-syrup.png",
+      "location": { "type": "room", "area": "room-autumn-1", "x": 1900, "y": 400 }
     },
     {
-      "id": "daruma",
-      "name": "Daruma Doll",
-      "description": "A round red daruma with only one eye painted in. A wish left unfulfilled.",
-      "spriteKey": "item_daruma",
-      "assetPath": "items/japanese-daruma.png",
-      "location": { "type": "room", "area": "room-japan-living-room", "x": 2400, "y": 1300 }
+      "id": "tuktuk",
+      "name": "Tuk-Tuk",
+      "description": "A toy tuk-tuk, the three-wheeled auto rickshaw that buzzes through the streets of Thailand.",
+      "spriteKey": "item_tuktuk",
+      "assetPath": "items/autumn-tuktuk.png",
+      "location": { "type": "room", "area": "room-autumn-1", "x": 2700, "y": 450 }
     },
     {
-      "id": "bonsai",
-      "name": "Toppled Bonsai",
-      "description": "A miniature pine in a cracked ceramic pot. Soil is spilled across the floor.",
-      "spriteKey": "item_bonsai",
-      "assetPath": "items/japanese-bonsai.png",
-      "location": { "type": "room", "area": "room-japan-balcony", "x": 2600, "y": 1500 }
+      "id": "boomerang",
+      "name": "Boomerang",
+      "description": "A returning boomerang, a hunting and sporting tool crafted by Aboriginal Australians for millennia.",
+      "spriteKey": "item_boomerang",
+      "assetPath": "items/desert-boomerang.png",
+      "location": { "type": "room", "area": "room-desert-1", "x": 500, "y": 500 }
     },
     {
-      "id": "kitsune-mask",
-      "name": "Kitsune Mask",
-      "description": "A fox mask with cracks running through the left eye. Dried flowers are tucked into the straps.",
-      "spriteKey": "item_kitsune_mask",
-      "assetPath": "items/japanese-kitsune-mask.png",
-      "location": { "type": "map", "area": "autumn", "x": 500, "y": 400 }
+      "id": "sphynx",
+      "name": "Sphinx Statue",
+      "description": "A small sphinx — the lion-bodied, human-headed guardian of ancient Egyptian tombs.",
+      "spriteKey": "item_sphynx",
+      "assetPath": "items/desert-sphynx.png",
+      "location": { "type": "room", "area": "room-desert-1", "x": 1100, "y": 700 }
+    },
+    {
+      "id": "turban",
+      "name": "Turban",
+      "description": "A length of cloth wound into a turban, worn across the deserts of the Middle East and South Asia.",
+      "spriteKey": "item_turban",
+      "assetPath": "items/desert-turban.png",
+      "location": { "type": "room", "area": "room-desert-1", "x": 1700, "y": 500 }
+    },
+    {
+      "id": "cross",
+      "name": "Crucifix",
+      "description": "An ornate crucifix, the Christian cross found in the chapels of medieval European castles.",
+      "spriteKey": "item_cross",
+      "assetPath": "items/castle-cross.png",
+      "location": { "type": "map", "area": "castle", "x": 300, "y": 350 }
+    },
+    {
+      "id": "kris",
+      "name": "Kris Dagger",
+      "description": "A kris, the wavy-bladed dagger of Indonesia, prized as both weapon and spiritual heirloom.",
+      "spriteKey": "item_kris",
+      "assetPath": "items/castle-kris.png",
+      "location": { "type": "map", "area": "castle", "x": 650, "y": 400 }
+    },
+    {
+      "id": "chalice",
+      "name": "Jeweled Chalice",
+      "description": "A ceremonial goblet set with gemstones, locked away in the dungeon vaults.",
+      "spriteKey": "item_chalice",
+      "assetPath": "items/dungeon-chalice.png",
+      "location": { "type": "map", "area": "dungeon", "x": 110, "y": 90 }
+    },
+    {
+      "id": "coin",
+      "name": "Gold Coin",
+      "description": "A tarnished gold coin stamped with the crest of a long-forgotten kingdom.",
+      "spriteKey": "item_coin",
+      "assetPath": "items/dungeon-coin.png",
+      "location": { "type": "map", "area": "dungeon", "x": 160, "y": 110 }
+    },
+    {
+      "id": "skull",
+      "name": "Skull",
+      "description": "A weathered skull, a grim relic left to gather dust in the dungeon depths.",
+      "spriteKey": "item_skull",
+      "assetPath": "items/dungeon-skull.png",
+      "location": { "type": "map", "area": "dungeon", "x": 210, "y": 100 }
+    },
+    {
+      "id": "ganesha",
+      "name": "Ganesha",
+      "description": "A statue of Ganesha, the elephant-headed Hindu deity who clears away obstacles.",
+      "spriteKey": "item_ganesha",
+      "assetPath": "items/island-ganesha.png",
+      "location": { "type": "map", "area": "island", "x": 500, "y": 400 }
+    },
+    {
+      "id": "island-hat",
+      "name": "Salakot",
+      "description": "A salakot, the lightweight woven sun hat traditional to the Philippines and nearby isles.",
+      "spriteKey": "item_island-hat",
+      "assetPath": "items/island-hat.png",
+      "location": { "type": "map", "area": "island", "x": 1200, "y": 700 }
+    },
+    {
+      "id": "kulintang",
+      "name": "Kulintang",
+      "description": "A kulintang, a row of small bronze gongs played across the southern Philippines and Borneo.",
+      "spriteKey": "item_kulintang",
+      "assetPath": "items/island-kulintang.png",
+      "location": { "type": "map", "area": "island", "x": 900, "y": 1000 }
     }
   ],
   "cases": {

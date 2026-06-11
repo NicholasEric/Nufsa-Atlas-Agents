@@ -93,8 +93,10 @@ To change *which room a door opens* or *its button label*, edit the matching `do
 
 ## 9. Popups, evidence book, modals
 
-- **Case File (shared evidence UI):** `src/system/CaseFile.ts` — one component used by GameScene (via `UIManager`) and RoomScene. Tune the bottom-left button (`createButton`: size/position/colors), the parchment book (`createBook`: page size `pw/ph`, colors `0xf2e6c8`, fonts), the per-page layout (`updatePage`: icon fit size, "?" glyph, FOUND stamp), and open/flip animations (`open`, `flip`). Editing this changes the evidence UI **everywhere** at once.
-- **FOUND popup & magnifier glow:** `src/system/UIManager.ts` (`createItemPopup` timings, glow).
+- **Case File (shared evidence UI):** `src/system/CaseFile.ts` — one component used by GameScene (via `UIManager`) and RoomScene. Two views: the **grid** (`createGrid`: `cols`/`pitchX`/`pitchY`/`cell` sizes, slot colors) and the **detail page** (`createPage` + `updatePage`: icon fit, "?" glyph, FOUND stamp). Book chrome/size in `createBook` (`pw/ph`, parchment `0xf2e6c8`). View switching in `showGrid`/`showPage`; paging in `flip`. Editing this changes the evidence UI **everywhere** at once.
+- **Corner pill buttons (SEARCH + CASE FILE):** `src/system/uiButtons.ts` `createPillButton()` — one builder for both, so editing it restyles both at once (size `PILL_H`, padding, gold colors `0xc9a24b`, idle-breathing halo, hover/press). The SEARCH pill lives in `UIManager.createMagnifierButton`; the CASE FILE pill in `CaseFile.createButton`.
+- **Search proximity glow & first-load hint:** `UIManager.updateMagnifierGlow` (green pulse when an item is in range) and `UIManager.showButtonHints` (one-time "Tap to search / Your evidence", gated by the `uiHintShown` registry flag).
+- **FOUND popup:** `src/system/UIManager.ts` `createItemPopup` (timings).
 
 ## 10. Audio
 

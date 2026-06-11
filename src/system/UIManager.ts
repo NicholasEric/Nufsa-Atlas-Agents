@@ -1,5 +1,6 @@
 import { ItemData } from '../types/game.types';
 import { CaseFile } from './CaseFile';
+import { createPillButton } from './uiButtons';
 
 /**
  * UIManager handles all UI components.
@@ -17,9 +18,11 @@ export class UIManager {
   /** Shared evidence UI: Case File button + paged book (built in populateItemList). */
   private evidenceBar: CaseFile | null = null;
 
-  /** Magnifier button (the magnifying-glass image) + its glow behind it. */
-  private magnifierBtn: Phaser.GameObjects.Image | null = null;
+  /** Search pill (magnifier) + its proximity glow, and the pill's size. */
+  private magnifierBtn: Phaser.GameObjects.Container | null = null;
   private magnifierGlow: Phaser.GameObjects.Graphics | null = null;
+  private searchPillW = 0;
+  private searchPillH = 0;
 
   /** Callback when magnifier is pressed */
   public onMagnifierPressed?: () => void;
@@ -86,48 +89,25 @@ export class UIManager {
   }
 
   /**
-   * Creates the magnifier button at bottom-right.
+   * Creates the search button in the bottom-right corner — a gold-trimmed
+   * "SEARCH" pill with the magnifying-glass icon, matching the bottom-left
+   * Case File pill. A green halo pulses around it when an item is in range.
    */
   private createMagnifierButton(scene: Phaser.Scene): void {
-    const screenWidth = scene.scale.width;
-    const screenHeight = scene.scale.height;
-    const btnSize = 80;
-    const padding = 20;
-
-    const btnX = screenWidth - padding - btnSize / 2;
-    const btnY = screenHeight - padding - btnSize / 2 - 50; // Above where the bottom UI sits
-
-    // Glow effect (behind button), pulses green when an item is in range.
+    // Proximity glow, drawn behind the pill.
     this.magnifierGlow = scene.add.graphics();
     this.magnifierGlow.setDepth(998);
     this.magnifierGlow.setScrollFactor(0);
 
-    // Magnifying-glass image as the button.
-    const icon = scene.add.image(btnX, btnY, 'magnifier-icon');
-    const natural = Math.max(icon.width, icon.height) || btnSize;
-    const baseScale = btnSize / natural;
-    icon.setScale(baseScale);
-    icon.setDepth(1000);
-    icon.setScrollFactor(0);
-    icon.setInteractive({ useHandCursor: true });
-    this.magnifierBtn = icon;
+    const pill = createPillButton(scene, 'bottom-right', 'magnifier-icon', 'SEARCH', () =>
+      this.onMagnifierPressed?.()
+    );
+    pill.container.setDepth(1000);
+    this.magnifierBtn = pill.container;
+    this.searchPillW = pill.width;
+    this.searchPillH = pill.height;
 
-    // Press animation for tactile feedback.
-    icon.on('pointerdown', () => {
-      scene.tweens.add({
-        targets: icon,
-        scale: baseScale * 0.9,
-        duration: 100,
-        yoyo: true,
-      });
-      this.onMagnifierPressed?.();
-    });
-
-    // Hover effect — slight grow.
-    icon.on('pointerover', () => icon.setScale(baseScale * 1.08));
-    icon.on('pointerout', () => icon.setScale(baseScale));
-
-    this.uiContainer.add([this.magnifierGlow, icon]);
+    this.uiContainer.add([this.magnifierGlow, pill.container]);
   }
 
   /**
@@ -144,18 +124,17 @@ export class UIManager {
   public updateMagnifierGlow(time: number): void {
     if (!this.magnifierGlow || !this.magnifierBtn) return;
 
+    this.magnifierGlow.clear();
     if (this.shouldGlow) {
-      this.magnifierGlow.clear();
-      // Bright pulsing glow when item is in range
-      const glowIntensity = 0.4 + Math.sin(time / 150) * 0.2;
-      this.magnifierGlow.fillStyle(0x00ff00, glowIntensity);
-      this.magnifierGlow.fillCircle(this.magnifierBtn.x, this.magnifierBtn.y, 55);
-
-      // Second glow layer for extra effect
-      this.magnifierGlow.fillStyle(0x00ff00, glowIntensity * 0.5);
-      this.magnifierGlow.fillCircle(this.magnifierBtn.x, this.magnifierBtn.y, 70);
-    } else {
-      this.magnifierGlow.clear();
+      // Pulsing green halo around the SEARCH pill when an item is in range.
+      const t = 0.5 + 0.5 * Math.sin(time / 200);
+      const w = this.searchPillW;
+      const h = this.searchPillH;
+      const x = this.magnifierBtn.x - w / 2;
+      const y = this.magnifierBtn.y - h / 2;
+      const off = 4 + 4 * t;
+      this.magnifierGlow.lineStyle(4, 0x57e389, 0.5 + 0.4 * t);
+      this.magnifierGlow.strokeRoundedRect(x - off, y - off, w + 2 * off, h + 2 * off, h / 2 + off);
     }
   }
 
@@ -164,6 +143,41 @@ export class UIManager {
    */
   public updateItemEntry(itemId: string, collected: boolean): void {
     this.evidenceBar?.setCollected(itemId, collected);
+  }
+
+  /**
+   * Shows a one-time hint above each corner button ("Tap to search" /
+   * "Your evidence") that fades after a few seconds. Gated by a registry
+   * flag so it only appears once per boot, not on every map travel.
+   */
+  public showButtonHints(scene: Phaser.Scene): void {
+    if (scene.registry.get('uiHintShown')) return;
+    scene.registry.set('uiHintShown', true);
+
+    const bubble = (x: number, y: number, label: string) => {
+      const t = scene.add.text(x, y, label, {
+        fontFamily: 'GameFont, Arial',
+        fontSize: '15px',
+        color: '#ffffff',
+        backgroundColor: '#000000cc',
+        padding: { x: 8, y: 4 },
+      });
+      t.setOrigin(0.5, 1);
+      t.setScrollFactor(0);
+      t.setDepth(1600);
+      this.uiContainer.add(t);
+      scene.tweens.add({
+        targets: t,
+        alpha: 0,
+        delay: 3500,
+        duration: 800,
+        onComplete: () => t.destroy(),
+      });
+    };
+
+    const aboveY = scene.scale.height - 84;
+    if (this.magnifierBtn) bubble(this.magnifierBtn.x, aboveY, 'Tap to search ↓');
+    bubble(120, aboveY, 'Your evidence ↓');
   }
 
   /**
@@ -418,30 +432,30 @@ export class UIManager {
     // Card sub-container so we can scale/fade everything as one from its center.
     const card = scene.add.container(screenWidth / 2, screenHeight / 2);
 
-    const foundLabel = scene.add.text(0, -90, 'FOUND!', {
+    const foundLabel = scene.add.text(0, -150, 'FOUND!', {
       fontFamily: 'GameFont, Arial',
-      fontSize: '32px',
+      fontSize: '54px',
       color: '#ffd700',
       fontStyle: 'bold',
       stroke: '#000000',
-      strokeThickness: 5,
+      strokeThickness: 7,
     });
     foundLabel.setOrigin(0.5);
 
     // Big item sprite, normalized to a uniform display size regardless of
     // source PNG dimensions (24/32/64).
     const sprite = scene.add.sprite(0, 0, item.spriteKey);
-    const targetSize = 112;
+    const targetSize = 200;
     const naturalSize = Math.max(sprite.width, sprite.height) || targetSize;
     sprite.setScale(targetSize / naturalSize);
 
-    const nameText = scene.add.text(0, 90, item.name, {
+    const nameText = scene.add.text(0, 150, item.name, {
       fontFamily: 'GameFont, Arial',
-      fontSize: '24px',
+      fontSize: '38px',
       color: '#ffffff',
       fontStyle: 'bold',
       stroke: '#000000',
-      strokeThickness: 3,
+      strokeThickness: 5,
     });
     nameText.setOrigin(0.5);
 

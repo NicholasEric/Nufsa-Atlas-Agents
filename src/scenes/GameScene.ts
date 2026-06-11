@@ -139,6 +139,9 @@ export class GameScene extends Scene {
     // every map fills 1024x768 without scaling the HUD.
     this.setupCameras();
 
+    // One-time "these are buttons" hint above the corner buttons.
+    this.ui.showButtonHints(this);
+
     // Start countdown timer
     this.startTimer();
 
@@ -202,7 +205,7 @@ export class GameScene extends Scene {
       tilesets: [{ name: 'tiles-japan', imageKey: 'tiles-japan' }],
       layerDepths: [
         { name: 'Ground', depth: -2 },
-        { name: 'Decorations', depth: -1 },
+        { name: 'Decorations', depth: 1 },
         { name: 'Buildings', depth: 0 },
         { name: 'Behind', depth: 10 },
       ],
