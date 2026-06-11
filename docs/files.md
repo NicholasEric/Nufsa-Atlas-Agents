@@ -35,7 +35,8 @@
 | `maps/island/map-island.json` | Wired (`island` case, **1856×1024 — larger than screen, zoomed down**). `spritefusion` → `tiles-island`. `Door1` → placeholder room. |
 | | _All maps now live in per-theme subfolders; the old top-level duplicate JSONs were deleted (2026-06-09)._ |
 | `tiles/` | Tileset PNGs: `tiles-japan`, `Autumn_Forest_Tiles/_Objects`, `tiles-dessert` + `tiles-dessert-2` (desert), `tiles-castle`, `tiles-dungeon`, `tiles-island`. |
-| `items/` | `japanese-<id>.png` item art. **Only 5 of 10 exist:** fan, hat, katana, origami, yukata. Missing: lantern, sake, daruma, bonsai, kitsune-mask (→ placeholder circles). |
+| `items/` | Item art, named `<region>-<name>.png` (e.g. `japanese-yukata`, `desert-sphynx`, `island-kulintang`). All 20 current items have real art (see `item-placements.md`). |
+| `buttons/` | UI button icons: `folder.png` (Case File) and `magnifiying-glass.png` (Search). |
 | `player/` | `Idle(1).png`, `Idle(2).png`, `Run(1..4).png` — 112×128 each. |
 | `fonts/font-2.otf` | Registered as `GameFont` via `@font-face` in `index.html`. |
 | `audio/` | Ambient + SFX (optional; missing = silent). |
@@ -57,4 +58,5 @@
 | `room-placeholder` | generated in BootScene (`createRoomPlaceholderTexture`) — Japan Door4, dungeon & island doors until real photos exist |
 | `room-autumn-1` | `maps/autumn/room-1.png` |
 | `player-idle-1/2`, `player-run-1..4` | `player/Idle(n).png`, `player/Run(n).png` |
-| `item_<id>` | `items/japanese-<id>.png` (from each item's `spriteKey`/`assetPath`) |
+| `casefile-folder` / `magnifier-icon` | `buttons/folder.png` / `buttons/magnifiying-glass.png` |
+| `item_<id>` | `items/<region>-<name>.png` (from each item's `spriteKey`/`assetPath`) |

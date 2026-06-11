@@ -100,9 +100,9 @@ export class BootScene extends Scene {
     this.load.image('room-autumn-1', 'assets/maps/autumn/room-1.png');
 
     // Folder icon for the Case File button (bottom-left evidence UI).
-    this.load.image('casefile-folder', 'assets/folder/folder.png');
+    this.load.image('casefile-folder', 'assets/buttons/folder.png');
     // Magnifying-glass icon for the search button (bottom-right).
-    this.load.image('magnifier-icon', 'assets/magnifiying-glass.png');
+    this.load.image('magnifier-icon', 'assets/buttons/magnifiying-glass.png');
 
     // Load player animation frames (separate PNGs, side-view only).
     // Frame keys are referenced by the animations created in create().
